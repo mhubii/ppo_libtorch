@@ -59,6 +59,14 @@ struct TestEnv
         pos_.setZero();
         state_ << pos_, goal_;
     }
+    void SetGoal(double x, double y)
+    {
+        goal_(0) = x;
+        goal_(1) = y;
+
+        old_dist_ = GoalDist(pos_);
+        state_ << pos_, goal_;
+    }
 
     Eigen::Vector2d pos_;
     Eigen::Vector2d goal_;
@@ -88,7 +96,7 @@ int main(int argc, char** argv) {
     // Training loop.
     uint n_iter = 10000;
     uint n_steps = 64;
-    uint n_epochs = 8;
+    uint n_epochs = 5;
     uint mini_batch_size = 16;
     uint ppo_epochs = uint(n_steps/mini_batch_size);
 
@@ -114,6 +122,11 @@ int main(int argc, char** argv) {
     // Output.
     std::ofstream out;
     out.open("data.csv");
+
+    // Random engine.
+    std::random_device rd;
+    std::mt19937 re(rd());
+    std::uniform_int_distribution<> dist(-5, 5);
 
     // Initial state of env.
     for (uint i=0;i<n_in;i++)
@@ -153,10 +166,12 @@ int main(int argc, char** argv) {
                     break;
                 case WON:
                     printf("won, reward: %f\n", env.Reward());
+                    reward[0][0] += 10.;
                     done[0][0] = 1.;
                     break;
                 case LOST:
                     printf("lost, reward: %f\n", env.Reward());
+                    reward[0][0] -= 10.;
                     done[0][0] = 1.;
                     break;
             }
@@ -198,6 +213,12 @@ int main(int argc, char** argv) {
 
             if (*(done.data<double>()) == 1.) 
             {
+                // Set new goal.
+                double x_new = double(dist(re)); 
+                double y_new = double(dist(re));
+                env.SetGoal(x_new, y_new);
+
+                // Reset the position of the agent.
                 env.Reset();
 
                 // Initial state of env.
