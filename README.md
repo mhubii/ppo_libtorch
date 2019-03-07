@@ -7,7 +7,7 @@ Do
 ```
 mkdir build
 cd build
-cmake -DCMAKE_PREFIX_PATH=/absolut/path/to/libtorch
+cmake -DCMAKE_PREFIX_PATH=/absolut/path/to/libtorch ..
 make
 ```
 Please check out [Pytorch](https://pytorch.org/cppdocs/installing.html#minimal-example) to find out how to build against the C++ API.
