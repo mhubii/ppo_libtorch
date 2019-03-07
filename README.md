@@ -1,6 +1,13 @@
 # PPO Pytorch C++
 
-This is an implementation of the [proximal policy optimization algorithm](https://arxiv.org/abs/1707.06347) for the C++ API of Pytorch. It uses a simple `TestEnv` in `main.cpp` to test the algorithm.
+This is an implementation of the [proximal policy optimization algorithm](https://arxiv.org/abs/1707.06347) for the C++ API of Pytorch. It uses a simple `TestEnv` in `main.cpp` to test the algorithm. Below is a small visualization of the environment, the algorithm is tested in.
+
+<br>
+<figure>
+  <p align="center"><img src="img/epoch_1.gif" width="20%" height="20%" hspace="40"><img src="img/epoch_5.gif" width="20%" height="20%" hspace="40"><img src="img/epoch_20.gif" width="20%" height="20%" hspace="40"></p>
+  <figcaption>Fig. 1: From top left to bottom right, the agent as it takes actions in the environment to reach the goal. </figcaption>
+</figure>
+<br><br>
 
 ## Build
 Do
@@ -22,5 +29,5 @@ for example
 ./testPPO 2 2
 ```
 
-## Results
-The results are save to `build/data.csv` and can be visualized by running `python plot.py`.
+## Visualization
+The results are saved to `data/data.csv` and can be visualized by running `python plot.py`.
