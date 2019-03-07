@@ -4,7 +4,7 @@ This is an implementation of the [proximal policy optimization algorithm](https:
 
 <br>
 <figure>
-  <p align="center"><img src="img/epoch_1.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_5.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_15.gif" width="40%" height="40%" hspace="20"><img src="img/epoch_20.gif" width="40%" height="40%" hspace="20"></p>
+  <p align="center"><img src="img/epoch_1.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_5.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_15.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_20.gif" width="50%" height="50%" hspace="0"></p>
   <figcaption>Fig. 1: From top left to bottom right, the agent as it takes actions in the environment to reach the goal. </figcaption>
 </figure>
 <br><br>
