@@ -9,7 +9,8 @@ using vec = Eigen::Vector2d;
 enum AGENT {
     PLAYING,
     WON,
-    LOST
+    LOST,
+    RESETTING
 };
 
 struct TestEnv
@@ -34,7 +35,7 @@ struct TestEnv
 
         AGENT agent;
 
-        if (GoalDist(pos_) < 1e-1) {
+        if (GoalDist(pos_) < 4e-1) {
             agent = WON;
         }
         else if (GoalDist(pos_) > 1e1) {
@@ -96,7 +97,7 @@ int main(int argc, char** argv) {
     // Training loop.
     uint n_iter = 10000;
     uint n_steps = 64;
-    uint n_epochs = 5;
+    uint n_epochs = 20;
     uint mini_batch_size = 16;
     uint ppo_epochs = uint(n_steps/mini_batch_size);
 
@@ -121,7 +122,7 @@ int main(int argc, char** argv) {
 
     // Output.
     std::ofstream out;
-    out.open("data.csv");
+    out.open("../data/data.csv");
 
     // Random engine.
     std::random_device rd;
@@ -133,6 +134,9 @@ int main(int argc, char** argv) {
     {
         state[0][i] = env.state_(i);
     }
+
+    // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+    out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
 
     // Counter.
     uint c = 0;
@@ -165,18 +169,19 @@ int main(int argc, char** argv) {
                     done[0][0] = 0.;
                     break;
                 case WON:
-                    printf("won, reward: %f\n", env.Reward());
                     reward[0][0] += 10.;
                     done[0][0] = 1.;
+                    printf("won, reward: %f\n", *(reward.data<double>()));
                     break;
                 case LOST:
-                    printf("lost, reward: %f\n", env.Reward());
                     reward[0][0] -= 10.;
                     done[0][0] = 1.;
+                    printf("lost, reward: %f\n", *(reward.data<double>()));
                     break;
             }
 
-            out << e << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << "\n";
+            // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+            out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
             // Store everything.
             states[c].copy_(state);
@@ -226,8 +231,28 @@ int main(int argc, char** argv) {
                 {
                     state[0][i] = env.state_(i);
                 }
+
+                // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+                out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
             }
         }
+
+        // Reset at the end of an epoch.
+        double x_new = double(dist(re)); 
+        double y_new = double(dist(re));
+        env.SetGoal(x_new, y_new);
+
+        // Reset the position of the agent.
+        env.Reset();
+
+        // Initial state of env.
+        for (uint i=0;i<n_in;i++)
+        {
+            state[0][i] = env.state_(i);
+        }
+
+        // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+        out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
     }
 
     out.close();
