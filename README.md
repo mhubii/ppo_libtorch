@@ -20,13 +20,9 @@ make
 Please check out [Pytorch](https://pytorch.org/cppdocs/installing.html#minimal-example) to find out how to build against the C++ API.
 
 ## Run
-Run the executable and specify the x, and y-position of the goal
+Run the executable with
 ```
-./testPPO goal_x goal_y
-```
-for example
-```
-./testPPO 2 2
+./testPPO
 ```
 
 ## Visualization
