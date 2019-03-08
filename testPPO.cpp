@@ -77,11 +77,16 @@ struct TestEnv
 };
 
 
-int main(int argc, char** argv) {
+int main() {
+
+    // Random engine.
+    std::random_device rd;
+    std::mt19937 re(rd());
+    std::uniform_int_distribution<> dist(-5, 5);
 
     // Environment.
-    double x = std::stod(argv[1]); // goal x pos
-    double y = std::stod(argv[2]); // goal y pos
+    double x = double(dist(re)); // goal x pos
+    double y = double(dist(re)); // goal y pos
     TestEnv env(x, y);
 
     // Model.
@@ -123,11 +128,6 @@ int main(int argc, char** argv) {
     // Output.
     std::ofstream out;
     out.open("../data/data.csv");
-
-    // Random engine.
-    std::random_device rd;
-    std::mt19937 re(rd());
-    std::uniform_int_distribution<> dist(-5, 5);
 
     // Initial state of env.
     for (uint i=0;i<n_in;i++)
