@@ -106,15 +106,6 @@ int main() {
     uint mini_batch_size = 16;
     uint ppo_epochs = uint(n_steps/mini_batch_size);
 
-    torch::Tensor state = torch::zeros({1, n_in}, torch::kF64);
-    torch::Tensor action = torch::zeros({1, n_out}, torch::kF64);
-    torch::Tensor reward = torch::zeros({1, 1}, torch::kF64);
-    torch::Tensor next_state = torch::zeros({1, n_in}, torch::kF64);
-    torch::Tensor done = torch::zeros({1, 1}, torch::kF64);
-
-    torch::Tensor log_prob = torch::zeros({1, 1}, torch::kF64);
-    torch::Tensor value = torch::zeros({1, 1}, torch::kF64);
-
     VT states(n_steps, torch::zeros({1, n_in}, torch::kF64));
     VT actions(n_steps, torch::zeros({1, n_out}, torch::kF64));
     VT rewards(n_steps, torch::zeros({1, 1}, torch::kF64));
@@ -129,12 +120,6 @@ int main() {
     std::ofstream out;
     out.open("../data/data.csv");
 
-    // Initial state of env.
-    for (uint i=0;i<n_in;i++)
-    {
-        state[0][i] = env.state_(i);
-    }
-
     // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
     out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
 
@@ -147,6 +132,21 @@ int main() {
 
         for (uint i=0;i<n_iter;i++)
         {
+            torch::Tensor state = torch::zeros({1, n_in}, torch::kF64);
+            torch::Tensor action = torch::zeros({1, n_out}, torch::kF64);
+            torch::Tensor reward = torch::zeros({1, 1}, torch::kF64);
+            torch::Tensor next_state = torch::zeros({1, n_in}, torch::kF64);
+            torch::Tensor done = torch::zeros({1, 1}, torch::kF64);
+
+            torch::Tensor log_prob = torch::zeros({1, 1}, torch::kF64);
+            torch::Tensor value = torch::zeros({1, 1}, torch::kF64);
+
+            // State of env.
+            for (uint i=0;i<n_in;i++)
+            {
+                state[0][i] = env.state_(i);
+            }
+
             // Play.
             auto av = ac.forward(state);
             action = std::get<0>(av);
@@ -184,14 +184,14 @@ int main() {
             out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
             // Store everything.
-            states[c].copy_(state);
-            rewards[c].copy_(reward);
-            actions[c].copy_(action);
-            next_states[c].copy_(next_state);
-            dones[c].copy_(done);
+            states[c] = state;
+            rewards[c] = reward;
+            actions[c] = action;
+            next_states[c] = next_state;
+            dones[c] = done;
 
-            log_probs[c].copy_(log_prob);
-            values[c].copy_(value);
+            log_probs[c] = log_prob;
+            values[c] = value;
             
             c++;
 
@@ -214,8 +214,6 @@ int main() {
                 c = 0;
             }
 
-            state.copy_(next_state);
-
             if (*(done.data<double>()) == 1.) 
             {
                 // Set new goal.
@@ -225,12 +223,6 @@ int main() {
 
                 // Reset the position of the agent.
                 env.Reset();
-
-                // Initial state of env.
-                for (uint i=0;i<n_in;i++)
-                {
-                    state[0][i] = env.state_(i);
-                }
 
                 // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
                 out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
@@ -244,12 +236,6 @@ int main() {
 
         // Reset the position of the agent.
         env.Reset();
-
-        // Initial state of env.
-        for (uint i=0;i<n_in;i++)
-        {
-            state[0][i] = env.state_(i);
-        }
 
         // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
         out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
