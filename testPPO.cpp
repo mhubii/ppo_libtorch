@@ -6,7 +6,7 @@
 
 using vec = Eigen::Vector2d;
 
-enum AGENT {
+enum STATUS {
     PLAYING,
     WON,
     LOST,
@@ -33,19 +33,19 @@ struct TestEnv
 
         state_ << pos_, goal_;
 
-        AGENT agent;
+        STATUS status;
 
         if (GoalDist(pos_) < 4e-1) {
-            agent = WON;
+            status = WON;
         }
         else if (GoalDist(pos_) > 1e1) {
-            agent = LOST;
+            status = LOST;
         }
         else {
-            agent = PLAYING;
+            status = PLAYING;
         }
 
-        return std::make_tuple(state_, agent);
+        return std::make_tuple(state_, status);
     }
     double Reward()
     {
@@ -135,7 +135,7 @@ int main() {
         state[0][i] = env.state_(i);
     }
 
-    // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+    // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
     out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
 
     // Counter.
@@ -232,7 +232,7 @@ int main() {
                     state[0][i] = env.state_(i);
                 }
 
-                // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+                // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
                 out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
             }
         }
@@ -251,7 +251,7 @@ int main() {
             state[0][i] = env.state_(i);
         }
 
-        // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+        // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
         out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
     }
 
