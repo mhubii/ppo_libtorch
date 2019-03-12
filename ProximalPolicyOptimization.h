@@ -69,10 +69,10 @@ auto PPO::update(ActorCritic& ac,
 
         for (auto& i: idx)
         {
-            auto av = ac.forward(states[i]); // action value pairs
+            auto av = ac->forward(states[i]); // action value pairs
             auto action = std::get<0>(av);
-            auto entropy = ac.entropy();
-            auto new_log_prob = ac.log_prob(actions[i]);
+            auto entropy = ac->entropy();
+            auto new_log_prob = ac->log_prob(actions[i]);
 
             auto old_log_prob = log_probs[i];
             auto ratio = (new_log_prob - old_log_prob).exp();

@@ -4,7 +4,7 @@
 #include <math.h>
 
 // Network model for Proximal Policy Optimization on Incy Wincy.
-struct ActorCritic : public torch::nn::Module 
+struct ActorCriticImpl : public torch::nn::Module 
 {
     // Actor.
     torch::nn::Linear a_lin1_{nullptr}, a_lin2_{nullptr}, a_lin3_{nullptr};
@@ -14,7 +14,7 @@ struct ActorCritic : public torch::nn::Module
     // Critic.
     torch::nn::Linear c_lin1_{nullptr}, c_lin2_{nullptr}, c_lin3_{nullptr}, c_val_{nullptr};
 
-    ActorCritic(int64_t n_in, int64_t n_out, double std)
+    ActorCriticImpl(int64_t n_in, int64_t n_out, double std)
         : // Actor.
           a_lin1_(torch::nn::Linear(n_in, 16)),
           a_lin2_(torch::nn::Linear(16, 32)),
@@ -40,7 +40,7 @@ struct ActorCritic : public torch::nn::Module
         register_module("c_val", c_val_);
     }
 
-    ActorCritic() = default;
+    ActorCriticImpl() = default;
 
     // Forward pass.
     auto forward(torch::Tensor x) -> std::tuple<torch::Tensor, torch::Tensor> 
@@ -135,3 +135,5 @@ struct ActorCritic : public torch::nn::Module
         }
     }
 };
+
+TORCH_MODULE(ActorCritic);

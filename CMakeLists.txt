@@ -12,7 +12,8 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 include_directories(${TORCH_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(testPPO testPPO.cpp) 
-target_link_libraries(testPPO ${TORCH_LIBRARIES})
+add_executable(train_ppo TrainPPO.cpp) 
+target_link_libraries(train_ppo ${TORCH_LIBRARIES})
 
-
+add_executable(test_ppo TestPPO.cpp) 
+target_link_libraries(test_ppo ${TORCH_LIBRARIES})
