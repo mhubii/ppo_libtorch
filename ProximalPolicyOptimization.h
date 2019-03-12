@@ -56,13 +56,13 @@ auto PPO::update(ActorCritic& ac,
                  OPT& opt, 
                  uint steps, uint epochs, uint mini_batch_size, double clip_param) -> void
 {
-    for (uint i=0;i<epochs;i++)
+    for (uint e=0;e<epochs;e++)
     {
         // Generate random indices.
         std::vector<uint> idx;
         idx.reserve(mini_batch_size);
 
-        for (uint i=0;i<mini_batch_size;i++) {
+        for (uint b=0;b<mini_batch_size;b++) {
 
             idx.push_back(std::uniform_int_distribution<uint>(0, steps-1)(re));
         }
