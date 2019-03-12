@@ -1,11 +1,10 @@
 # PPO Pytorch C++
 
-This is an implementation of the [proximal policy optimization algorithm](https://arxiv.org/abs/1707.06347) for the C++ API of Pytorch. It uses a simple `TestEnv` in `main.cpp` to test the algorithm. Below is a small visualization of the environment, the algorithm is tested in.
-
+This is an implementation of the [proximal policy optimization algorithm](https://arxiv.org/abs/1707.06347) for the C++ API of Pytorch. It uses a simple `TestEnvironment` to test the algorithm. Below is a small visualization of the environment, the algorithm is tested in.
 <br>
 <figure>
-  <p align="center"><img src="img/epoch_1.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_5.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_15.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_20.gif" width="50%" height="50%" hspace="0"></p>
-  <figcaption>Fig. 1: From top left to bottom right, the agent as it takes actions in the environment to reach the goal. </figcaption>
+  <p align="center"><img src="img/test_mode.gif" width="50%" height="50%" hspace="0"></p>
+  <figcaption>Fig. 1: The agent in testing mode. </figcaption>
 </figure>
 <br><br>
 
@@ -22,7 +21,20 @@ Please check out [Pytorch](https://pytorch.org/cppdocs/installing.html#minimal-e
 ## Run
 Run the executable with
 ```
-./testPPO
+cd build
+./train_ppo
+```
+It should produce something like shown below.
+<br>
+<figure>
+  <p align="center"><img src="img/epoch_1.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_5.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_15.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_20.gif" width="50%" height="50%" hspace="0"></p>
+  <figcaption>Fig. 2: From top left to bottom right, the agent for successive epochs in training mode as it takes actions in the environment to reach the goal. </figcaption>
+</figure>
+<br><br>
+The algorithm can also be used in test mode, once trained. Therefore, run
+```
+cd build
+./test_ppo
 ```
 
 ## Visualization
