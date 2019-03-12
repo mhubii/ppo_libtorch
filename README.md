@@ -36,6 +36,5 @@ The algorithm can also be used in test mode, once trained. Therefore, run
 cd build
 ./test_ppo
 ```
-
 ## Visualization
 The results are saved to `data/data.csv` and can be visualized by running `python plot.py`.
