@@ -3,79 +3,7 @@
 #include <torch/torch.h>
 #include "ProximalPolicyOptimization.h"
 #include "Models.h"
-
-using vec = Eigen::Vector2d;
-
-enum STATUS {
-    PLAYING,
-    WON,
-    LOST,
-    RESETTING
-};
-
-struct TestEnv
-{
-    TestEnv(double x, double y) : goal_(2), pos_(2), state_(4)
-    {
-        goal_ << x, y;
-        pos_.setZero();
-        state_ << pos_, goal_;  
-
-        old_dist_ = GoalDist(pos_);
-    };
-
-    auto Act(double act_x, double act_y) -> std::tuple<Eigen::VectorXd, int>
-    { 
-        old_dist_ = GoalDist(pos_);
-
-        pos_(0) += act_x;
-        pos_(1) += act_y;
-
-        state_ << pos_, goal_;
-
-        STATUS status;
-
-        if (GoalDist(pos_) < 4e-1) {
-            status = WON;
-        }
-        else if (GoalDist(pos_) > 1e1) {
-            status = LOST;
-        }
-        else {
-            status = PLAYING;
-        }
-
-        return std::make_tuple(state_, status);
-    }
-    double Reward()
-    {
-        return old_dist_ - GoalDist(pos_);
-    }
-    double GoalDist(vec& x) 
-    { 
-        return (goal_ - x).norm();
-    }
-    void Reset()
-    {
-        pos_.setZero();
-        state_ << pos_, goal_;
-    }
-    void SetGoal(double x, double y)
-    {
-        goal_(0) = x;
-        goal_(1) = y;
-
-        old_dist_ = GoalDist(pos_);
-        state_ << pos_, goal_;
-    }
-
-    Eigen::Vector2d pos_;
-    Eigen::Vector2d goal_;
-    Eigen::VectorXd state_;
-
-    double old_dist_;
-};
-
+#include "TestEnvironment.h"
 
 int main() {
 
@@ -87,7 +15,7 @@ int main() {
     // Environment.
     double x = double(dist(re)); // goal x pos
     double y = double(dist(re)); // goal y pos
-    TestEnv env(x, y);
+    TestEnvironment env(x, y);
 
     // Model.
     uint n_in = 4;
@@ -106,15 +34,14 @@ int main() {
     uint mini_batch_size = 16;
     uint ppo_epochs = uint(n_steps/mini_batch_size);
 
-    VT states(n_steps, torch::zeros({1, n_in}, torch::kF64));
-    VT actions(n_steps, torch::zeros({1, n_out}, torch::kF64));
-    VT rewards(n_steps, torch::zeros({1, 1}, torch::kF64));
-    VT next_states(n_steps, torch::zeros({1, n_in}, torch::kF64));
-    VT dones(n_steps, torch::zeros({1, 1}, torch::kF64));
+    VT states;
+    VT actions;
+    VT rewards;
+    VT dones;
 
-    VT log_probs(n_steps, torch::zeros({1, n_out}, torch::kF64));
-    VT returns(n_steps, torch::zeros({1, 1}, torch::kF64));
-    VT values(n_steps+1, torch::zeros({1, 1}, torch::kF64));
+    VT log_probs;
+    VT returns;
+    VT values;
 
     // Output.
     std::ofstream out;
@@ -132,73 +59,46 @@ int main() {
 
         for (uint i=0;i<n_iter;i++)
         {
-            torch::Tensor state = torch::zeros({1, n_in}, torch::kF64);
-            torch::Tensor action = torch::zeros({1, n_out}, torch::kF64);
-            torch::Tensor reward = torch::zeros({1, 1}, torch::kF64);
-            torch::Tensor next_state = torch::zeros({1, n_in}, torch::kF64);
-            torch::Tensor done = torch::zeros({1, 1}, torch::kF64);
-
-            torch::Tensor log_prob = torch::zeros({1, 1}, torch::kF64);
-            torch::Tensor value = torch::zeros({1, 1}, torch::kF64);
-
             // State of env.
-            for (uint i=0;i<n_in;i++)
-            {
-                state[0][i] = env.state_(i);
-            }
+            states.push_back(env.State());
 
             // Play.
-            auto av = ac.forward(state);
-            action = std::get<0>(av);
-            value = std::get<1>(av);
-            log_prob = ac.log_prob(action);
+            auto av = ac.forward(states[c]);
+            actions.push_back(std::get<0>(av));
+            values.push_back(std::get<1>(av));
+            log_probs.push_back(ac.log_prob(actions[c]));
 
-            double x_act = *(action.data<double>());
-            double y_act = *(action.data<double>()+1);
+            double x_act = *(actions[c].data<double>());
+            double y_act = *(actions[c].data<double>()+1);
             auto sd = env.Act(x_act, y_act);
 
             // New state.
-            reward[0][0] = env.Reward();
-            for (uint i=0;i<n_in;i++)
-            {
-                next_state[0][i] = std::get<0>(sd)(i);
-            }
-            switch (std::get<1>(sd))
-            {
-                case PLAYING:
-                    done[0][0] = 0.;
-                    break;
-                case WON:
-                    reward[0][0] += 10.;
-                    done[0][0] = 1.;
-                    printf("won, reward: %f\n", *(reward.data<double>()));
-                    break;
-                case LOST:
-                    reward[0][0] -= 10.;
-                    done[0][0] = 1.;
-                    printf("lost, reward: %f\n", *(reward.data<double>()));
-                    break;
-            }
+            rewards.push_back(env.Reward(std::get<1>(sd)));
+            dones.push_back(std::get<2>(sd));
 
             // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
             out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
-            // Store everything.
-            states[c] = state;
-            rewards[c] = reward;
-            actions[c] = action;
-            next_states[c] = next_state;
-            dones[c] = done;
+            if (*(dones[c].data<double>()) == 1.) 
+            {
+                // Set new goal.
+                double x_new = double(dist(re)); 
+                double y_new = double(dist(re));
+                env.SetGoal(x_new, y_new);
 
-            log_probs[c] = log_prob;
-            values[c] = value;
-            
+                // Reset the position of the agent.
+                env.Reset();
+
+                // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
+                out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
+            }
+
             c++;
 
             // Update.
             if (c%n_steps == 0)
             {
-                values[c] = std::get<1>(ac.forward(next_state));
+                values.push_back(std::get<1>(ac.forward(states[c-1])));
 
                 returns = PPO::returns(rewards, dones, values, .99, .95);
 
@@ -212,20 +112,15 @@ int main() {
                 PPO::update(ac, t_states, t_actions, t_log_probs, t_returns, t_advantages, opt, n_steps, ppo_epochs, mini_batch_size);
             
                 c = 0;
-            }
 
-            if (*(done.data<double>()) == 1.) 
-            {
-                // Set new goal.
-                double x_new = double(dist(re)); 
-                double y_new = double(dist(re));
-                env.SetGoal(x_new, y_new);
+                states.clear();
+                actions.clear();
+                rewards.clear();
+                dones.clear();
 
-                // Reset the position of the agent.
-                env.Reset();
-
-                // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
-                out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
+                log_probs.clear();
+                returns.clear();
+                values.clear();
             }
         }
 
