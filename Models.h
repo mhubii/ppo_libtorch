@@ -7,12 +7,12 @@
 struct ActorCriticImpl : public torch::nn::Module 
 {
     // Actor.
-    torch::nn::Linear a_lin1_{nullptr}, a_lin2_{nullptr}, a_lin3_{nullptr};
+    torch::nn::Linear a_lin1_, a_lin2_, a_lin3_;
     torch::Tensor mu_;
     torch::Tensor std_;
 
     // Critic.
-    torch::nn::Linear c_lin1_{nullptr}, c_lin2_{nullptr}, c_lin3_{nullptr}, c_val_{nullptr};
+    torch::nn::Linear c_lin1_, c_lin2_, c_lin3_, c_val_;
 
     ActorCriticImpl(int64_t n_in, int64_t n_out, double std)
         : // Actor.
@@ -39,8 +39,6 @@ struct ActorCriticImpl : public torch::nn::Module
         register_module("c_lin3", c_lin3_);
         register_module("c_val", c_val_);
     }
-
-    ActorCriticImpl() = default;
 
     // Forward pass.
     auto forward(torch::Tensor x) -> std::tuple<torch::Tensor, torch::Tensor> 
