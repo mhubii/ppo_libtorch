@@ -31,6 +31,7 @@ It should produce something like shown below.
   <figcaption>Fig. 2: From top left to bottom right, the agent for successive epochs in training mode as it takes actions in the environment to reach the goal. </figcaption>
 </figure>
 <br><br>
+
 The algorithm can also be used in test mode, once trained. Therefore, run
 ```
 cd build
