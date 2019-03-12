@@ -30,7 +30,6 @@ int main() {
 
     // Training loop.
     uint n_iter = 10000;
-    uint n_epochs = 1;
 
     // Output.
     std::ofstream out;
@@ -42,51 +41,35 @@ int main() {
     // Counter.
     uint c = 0;
 
-    for (uint e=0;e<n_epochs;e++)
+    for (uint i=0;i<n_iter;i++)
     {
-        printf("epoch %u/%u\n", e+1, n_epochs);
+        // Play.
+        auto av = ac->forward(env.State());
+        auto action = std::get<0>(av);
 
-        for (uint i=0;i<n_iter;i++)
+        double x_act = *(action.data<double>());
+        double y_act = *(action.data<double>()+1);
+        auto sd = env.Act(x_act, y_act);
+
+        // Check for done state.
+        auto done = std::get<2>(sd);
+
+        // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+        out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
+
+        if (*(done.data<double>()) == 1.) 
         {
-            // Play.
-            auto av = ac->forward(env.State());
-            auto action = std::get<0>(av);
+            // Set new goal.
+            double x_new = double(dist(re)); 
+            double y_new = double(dist(re));
+            env.SetGoal(x_new, y_new);
 
-            double x_act = *(action.data<double>());
-            double y_act = *(action.data<double>()+1);
-            auto sd = env.Act(x_act, y_act);
+            // Reset the position of the agent.
+            env.Reset();
 
-            // Check for done state.
-            auto done = std::get<2>(sd);
-
-            // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
-            out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
-
-            if (*(done.data<double>()) == 1.) 
-            {
-                // Set new goal.
-                double x_new = double(dist(re)); 
-                double y_new = double(dist(re));
-                env.SetGoal(x_new, y_new);
-
-                // Reset the position of the agent.
-                env.Reset();
-
-                // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
-                out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
-            }
+            // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
+            out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
         }
-
-        // Reset at the end of an epoch.
-        double x_new = double(dist(re)); 
-        double y_new = double(dist(re));
-        env.SetGoal(x_new, y_new);
-
-        // Reset the position of the agent.
-        env.Reset();
-
-        // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
-        out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
     }
 
     out.close();
