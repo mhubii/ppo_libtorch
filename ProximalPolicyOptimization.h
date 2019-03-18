@@ -83,7 +83,10 @@ auto PPO::update(ActorCritic& ac,
             auto actor_loss = -torch::min(surr1, surr2);
             auto critic_loss = (returns[i]-val).pow(2);
 
-            auto loss = 0.5*critic_loss+actor_loss-0.001*entropy;
+            auto loss = 0.5*critic_loss+actor_loss-0.001*entropy; 
+            for (uint j=0;j<loss.size(0);j++) {
+            	AT_ASSERT(!std::isnan(loss[j].template item<double>()));
+            }
 
             opt.zero_grad();
             loss.backward();

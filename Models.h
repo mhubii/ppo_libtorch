@@ -9,7 +9,7 @@ struct ActorCriticImpl : public torch::nn::Module
     // Actor.
     torch::nn::Linear a_lin1_, a_lin2_, a_lin3_;
     torch::Tensor mu_;
-    torch::Tensor std_;
+    torch::Tensor log_std_;
 
     // Critic.
     torch::nn::Linear c_lin1_, c_lin2_, c_lin3_, c_val_;
@@ -20,7 +20,7 @@ struct ActorCriticImpl : public torch::nn::Module
           a_lin2_(torch::nn::Linear(16, 32)),
           a_lin3_(torch::nn::Linear(32, n_out)),
           mu_(torch::full(n_out, 0.)),
-          std_(torch::full(n_out, std, torch::kFloat64)),
+          log_std_(torch::full(n_out, std, torch::kFloat64)),
           
           // Critic
           c_lin1_(torch::nn::Linear(n_in, 16)),
@@ -32,7 +32,7 @@ struct ActorCriticImpl : public torch::nn::Module
         register_module("a_lin1", a_lin1_);
         register_module("a_lin2", a_lin2_);
         register_module("a_lin3", a_lin3_);
-        register_parameter("std", std_);
+        register_parameter("log_std", log_std_);
 
         register_module("c_lin1", c_lin1_);
         register_module("c_lin2", c_lin2_);
@@ -60,7 +60,7 @@ struct ActorCriticImpl : public torch::nn::Module
         {
             torch::NoGradGuard no_grad;
 
-            torch::Tensor action = torch::normal(mu_, std_.abs().expand_as(mu_));
+            torch::Tensor action = torch::normal(mu_, log_std_.exp().expand_as(mu_));
             return std::make_tuple(action, val);  
         }
         else 
@@ -93,16 +93,15 @@ struct ActorCriticImpl : public torch::nn::Module
     auto entropy() -> torch::Tensor
     {
         // Differential entropy of normal distribution. For reference https://pytorch.org/docs/stable/_modules/torch/distributions/normal.html#Normal
-        return 0.5 + 0.5*log(2*M_PI) + std_.abs().log();
+        return 0.5 + 0.5*log(2*M_PI) + log_std_;
     }
 
     auto log_prob(torch::Tensor action) -> torch::Tensor
     {
         // Logarithmic probability of taken action, given the current distribution.
-        torch::Tensor var = std_*std_;
-        torch::Tensor log_scale = std_.abs().log();
+        torch::Tensor var = (log_std_+log_std_).exp();
 
-        return -((action - mu_)*(action - mu_))/(2*var) - log_scale - log(sqrt(2*M_PI));
+        return -((action - mu_)*(action - mu_))/(2*var) - log_std_ - log(sqrt(2*M_PI));
     }
 
     // Forward pass using reparametrization.
@@ -124,7 +123,7 @@ struct ActorCriticImpl : public torch::nn::Module
         if (this->is_training()) 
         {
             torch::Tensor action = torch::normal(torch::zeros(mu_.sizes()), torch::ones(mu_.sizes())).detach();
-            action = action.mul(std_.abs()).add(mu_).expand_as(mu_);
+            action = action.mul(log_std_.exp()).add(mu_).expand_as(mu_);
             return std::make_tuple(action, val);  
         }
         else 
