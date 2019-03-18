@@ -29,8 +29,9 @@ struct TestEnvironment
     { 
         old_dist_ = GoalDist(pos_);
 
-        pos_(0) += act_x;
-        pos_(1) += act_y;
+        double max_step = 0.1;
+        pos_(0) += max_step*act_x;
+        pos_(1) += max_step*act_y;
 
         state_ << pos_, goal_;
 

@@ -35,7 +35,7 @@ int main() {
     std::ofstream out;
     out.open("../data/data_test.csv");
 
-    // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
+    // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST, RESETTING)
     out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
 
     // Counter.
@@ -54,7 +54,7 @@ int main() {
         // Check for done state.
         auto done = std::get<2>(sd);
 
-        // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
+        // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST, RESETTING)
         out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
         if (*(done.data<double>()) == 1.) 
@@ -67,7 +67,7 @@ int main() {
             // Reset the position of the agent.
             env.Reset();
 
-            // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
+            // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST, RESETTING)
             out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
         }
     }

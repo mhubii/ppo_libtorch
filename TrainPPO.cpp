@@ -29,10 +29,11 @@ int main() {
 
     // Training loop.
     uint n_iter = 10000;
-    uint n_steps = 64;
-    uint n_epochs = 20;
-    uint mini_batch_size = 16;
-    uint ppo_epochs = uint(n_steps/mini_batch_size);
+    uint n_steps = 2048;
+    uint n_epochs = 10;
+    uint mini_batch_size = 512;
+    uint ppo_epochs = 4;
+    double beta = 1e-3;
 
     VT states;
     VT actions;
@@ -47,7 +48,7 @@ int main() {
     std::ofstream out;
     out.open("../data/data.csv");
 
-    // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
+    // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST, RESETTING)
     out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
 
     // Counter.
@@ -57,9 +58,9 @@ int main() {
     double best_avg_reward = 0.;
     double avg_reward = 0.;
 
-    for (uint e=0;e<n_epochs;e++)
+    for (uint e=1;e<=n_epochs;e++)
     {
-        printf("epoch %u/%u\n", e+1, n_epochs);
+        printf("epoch %u/%u\n", e, n_epochs);
 
         for (uint i=0;i<n_iter;i++)
         {
@@ -80,10 +81,10 @@ int main() {
             rewards.push_back(env.Reward(std::get<1>(sd)));
             dones.push_back(std::get<2>(sd));
 
-            avg_reward = *(rewards[c].data<double>())/n_iter;
+            avg_reward += *(rewards[c].data<double>())/n_iter;
 
-            // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST)
-            out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
+            // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST, RESETTING)
+            out << e << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
             if (*(dones[c].data<double>()) == 1.) 
             {
@@ -95,8 +96,8 @@ int main() {
                 // Reset the position of the agent.
                 env.Reset();
 
-                // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
-                out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
+                // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST, RESETTING)
+                out << e << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
             }
 
             c++;
@@ -104,6 +105,7 @@ int main() {
             // Update.
             if (c%n_steps == 0)
             {
+                printf("Updating the network.\n");
                 values.push_back(std::get<1>(ac->forward(states[c-1])));
 
                 returns = PPO::returns(rewards, dones, values, .99, .95);
@@ -115,7 +117,7 @@ int main() {
                 torch::Tensor t_actions = torch::cat(actions);
                 torch::Tensor t_advantages = t_returns - t_values.slice(0, 0, n_steps);
 
-                PPO::update(ac, t_states, t_actions, t_log_probs, t_returns, t_advantages, opt, n_steps, ppo_epochs, mini_batch_size);
+                PPO::update(ac, t_states, t_actions, t_log_probs, t_returns, t_advantages, opt, n_steps, ppo_epochs, mini_batch_size, beta);
             
                 c = 0;
 
@@ -138,6 +140,8 @@ int main() {
             torch::save(ac, "best_model.pt");
         }
 
+        avg_reward = 0.;
+
         // Reset at the end of an epoch.
         double x_new = double(dist(re)); 
         double y_new = double(dist(re));
@@ -146,8 +150,8 @@ int main() {
         // Reset the position of the agent.
         env.Reset();
 
-        // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST)
-        out << e+1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
+        // episode, agent_x, agent_y, goal_x, goal_y, STATUS=(PLAYING, WON, LOST, RESETTING)
+        out << e << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << RESETTING << "\n";
     }
 
     out.close();

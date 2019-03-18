@@ -26,7 +26,7 @@ public:
                        torch::Tensor& returns,
                        torch::Tensor& advantages, 
                        OPT& opt, 
-                       uint steps, uint epochs, uint mini_batch_size, double clip_param=.2) -> void;
+                       uint steps, uint epochs, uint mini_batch_size, double beta, double clip_param=.2) -> void;
 };
 
 auto PPO::returns(VT& rewards, VT& dones, VT& vals, double gamma, double lambda) -> VT
@@ -54,7 +54,7 @@ auto PPO::update(ActorCritic& ac,
                  torch::Tensor& returns,
                  torch::Tensor& advantages, 
                  OPT& opt, 
-                 uint steps, uint epochs, uint mini_batch_size, double clip_param) -> void
+                 uint steps, uint epochs, uint mini_batch_size, double beta, double clip_param) -> void
 {
     for (uint e=0;e<epochs;e++)
     {
@@ -83,7 +83,7 @@ auto PPO::update(ActorCritic& ac,
             auto actor_loss = -torch::min(surr1, surr2);
             auto critic_loss = (returns[i]-val).pow(2);
 
-            auto loss = 0.5*critic_loss+actor_loss-0.001*entropy; 
+            auto loss = 0.5*critic_loss+actor_loss-beta*entropy; 
             for (uint j=0;j<loss.size(0);j++) {
             	AT_ASSERT(!std::isnan(loss[j].template item<double>()));
             }

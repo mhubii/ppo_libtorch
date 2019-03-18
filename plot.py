@@ -4,8 +4,8 @@ import matplotlib.animation as animation
 from matplotlib.patches import Circle
 
 # get data
-train_mode = False
-if (train_model):
+train_mode = True
+if (train_mode):
     data = np.genfromtxt("data/data.csv", delimiter=",")
 else:
     data = np.genfromtxt("data/data_test.csv", delimiter=",")
@@ -34,8 +34,10 @@ title = ax.text(0.15,0.85, "", bbox={'facecolor':'w', 'alpha':0.5, 'pad':5},
                 transform=ax.transAxes, ha="center")
 
 # plot everything
-#epochs = np.array([1,5,10,15,20])
-epochs = np.array([1])
+if (train_mode):
+    epochs = np.array([1,10])
+else:
+    epochs = np.array([1])
 
 for e in epochs:
 
@@ -62,8 +64,9 @@ for e in epochs:
 
 
     ani = animation.FuncAnimation(fig, animate, blit=True, interval=5, frames=1000)
-    #plt.show()
-    if (train_mode):
-        ani.save('img/epoch_{}.gif'.format(e), writer='imagemagick', fps=100)
-    else:
-        ani.save('img/test_mode.gif'.format(e), writer='imagemagick', fps=100)
+    plt.show()
+    # uncomment these lines to save the plots as gif
+    #if (train_mode):
+    #    ani.save('img/epoch_{}.gif'.format(e), writer='imagemagick', fps=100)
+    #else:
+    #    ani.save('img/test_mode.gif'.format(e), writer='imagemagick', fps=100)
