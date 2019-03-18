@@ -27,8 +27,8 @@ cd build
 It should produce something like shown below.
 <br>
 <figure>
-  <p align="center"><img src="img/epoch_1.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_5.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_15.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_20.gif" width="50%" height="50%" hspace="0"></p>
-  <figcaption>Fig. 2: From top left to bottom right, the agent for successive epochs in training mode as it takes actions in the environment to reach the goal. </figcaption>
+  <p align="center"><img src="img/epoch_1.gif" width="50%" height="50%" hspace="0"><img src="img/epoch_10.gif" width="50%" height="50%" hspace="0"></p>
+  <figcaption>Fig. 2: From left to right, the agent for successive epochs in training mode as it takes actions in the environment to reach the goal. </figcaption>
 </figure>
 <br><br>
 
