@@ -9,6 +9,8 @@ This is an implementation of the [proximal policy optimization algorithm](https:
 <br><br>
 
 ## Build
+You first need to install PyTorch. For a clean installation from [Anaconda](https://www.anaconda.com/), checkout this short [tutorial](https://gist.github.com/mhubii/1c1049fb5043b8be262259efac4b89d5), or this [tutorial](https://pytorch.org/cppdocs/installing.html), to only install the binaries.
+
 Do
 ```
 mkdir build
