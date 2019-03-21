@@ -1,6 +1,7 @@
 #include <fstream>
 #include <Eigen/Core>
 #include <torch/torch.h>
+#include <random>
 #include "ProximalPolicyOptimization.h"
 #include "Models.h"
 #include "TestEnvironment.h"
