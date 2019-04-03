@@ -20,7 +20,7 @@ struct ActorCriticImpl : public torch::nn::Module
           a_lin2_(torch::nn::Linear(16, 32)),
           a_lin3_(torch::nn::Linear(32, n_out)),
           mu_(torch::full(n_out, 0.)),
-          log_std_(torch::full(n_out, std, torch::kFloat64)),
+          log_std_(torch::full(n_out, std)),
           
           // Critic
           c_lin1_(torch::nn::Linear(n_in, 16)),
@@ -55,7 +55,6 @@ struct ActorCriticImpl : public torch::nn::Module
         val = torch::tanh(c_lin3_->forward(val));
         val = c_val_->forward(val);
 
-        // Reparametrization trick.
         if (this->is_training()) 
         {
             torch::NoGradGuard no_grad;
@@ -80,16 +79,6 @@ struct ActorCriticImpl : public torch::nn::Module
         }         
     }
 
-    void zero() 
-    {
-        torch::NoGradGuard no_grad;
-
-        for (auto& p: this->parameters()) 
-        {
-            p.zero_();
-        }         
-    }
-
     auto entropy() -> torch::Tensor
     {
         // Differential entropy of normal distribution. For reference https://pytorch.org/docs/stable/_modules/torch/distributions/normal.html#Normal
@@ -102,34 +91,6 @@ struct ActorCriticImpl : public torch::nn::Module
         torch::Tensor var = (log_std_+log_std_).exp();
 
         return -((action - mu_)*(action - mu_))/(2*var) - log_std_ - log(sqrt(2*M_PI));
-    }
-
-    // Forward pass using reparametrization.
-    auto rforward(torch::Tensor x) -> std::tuple<torch::Tensor, torch::Tensor> 
-    {
- 
-        // Actor.
-        mu_ = torch::relu(a_lin1_->forward(x));
-        mu_ = torch::relu(a_lin2_->forward(mu_));
-        mu_ = torch::tanh(a_lin3_->forward(mu_));
-
-        // Critic.
-        torch::Tensor val = torch::relu(c_lin1_->forward(x));
-        val = torch::relu(c_lin2_->forward(val));
-        val = torch::tanh(c_lin3_->forward(val));
-        val = c_val_->forward(val);
-
-        // Reparametrization trick.
-        if (this->is_training()) 
-        {
-            torch::Tensor action = torch::normal(torch::zeros(mu_.sizes()), torch::ones(mu_.sizes())).detach();
-            action = action.mul(log_std_.exp()).add(mu_).expand_as(mu_);
-            return std::make_tuple(action, val);  
-        }
-        else 
-        {
-            return std::make_tuple(mu_, val);  
-        }
     }
 };
 

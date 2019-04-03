@@ -9,6 +9,8 @@ This is an implementation of the [proximal policy optimization algorithm](https:
 <br><br>
 
 ## Build
+You first need to install PyTorch. For a clean installation from Anaconda, checkout this short [tutorial](https://gist.github.com/mhubii/1c1049fb5043b8be262259efac4b89d5), or this [tutorial](https://pytorch.org/cppdocs/installing.html), to only install the binaries.
+
 Do
 ```
 mkdir build
@@ -16,7 +18,6 @@ cd build
 cmake -DCMAKE_PREFIX_PATH=/absolut/path/to/libtorch ..
 make
 ```
-Please check out [Pytorch](https://pytorch.org/cppdocs/installing.html#minimal-example) to find out how to build against the C++ API.
 
 ## Run
 Run the executable with

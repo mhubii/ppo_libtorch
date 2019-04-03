@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 project(ppo)
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(OpenGL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Torch REQUIRED)
 
