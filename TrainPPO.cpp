@@ -31,7 +31,7 @@ int main() {
     // Training loop.
     uint n_iter = 10000;
     uint n_steps = 2048;
-    uint n_epochs = 10;
+    uint n_epochs = 15;
     uint mini_batch_size = 512;
     uint ppo_epochs = 4;
     double beta = 1e-3;
