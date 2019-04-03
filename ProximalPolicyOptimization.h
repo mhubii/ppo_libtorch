@@ -59,38 +59,40 @@ auto PPO::update(ActorCritic& ac,
     for (uint e=0;e<epochs;e++)
     {
         // Generate random indices.
-        std::vector<uint> idx;
-        idx.reserve(mini_batch_size);
+        torch::Tensor cpy_sta = torch::zeros({mini_batch_size, states.size(1)}, states.dtype());
+        torch::Tensor cpy_act = torch::zeros({mini_batch_size, actions.size(1)}, actions.dtype());
+        torch::Tensor cpy_log = torch::zeros({mini_batch_size, log_probs.size(1)}, log_probs.dtype());
+        torch::Tensor cpy_ret = torch::zeros({mini_batch_size, returns.size(1)}, returns.dtype());
+        torch::Tensor cpy_adv = torch::zeros({mini_batch_size, advantages.size(1)}, advantages.dtype());
 
         for (uint b=0;b<mini_batch_size;b++) {
 
-            idx.push_back(std::uniform_int_distribution<uint>(0, steps-1)(re));
+            uint idx = std::uniform_int_distribution<uint>(0, steps-1)(re);
+            cpy_sta[b] = states[idx];
+            cpy_act[b] = actions[idx];
+            cpy_log[b] = log_probs[idx];
+            cpy_ret[b] = returns[idx];
+            cpy_adv[b] = advantages[idx];
         }
 
-        for (auto& i: idx)
-        {
-            auto av = ac->forward(states[i]); // action value pairs
-            auto action = std::get<0>(av);
-            auto entropy = ac->entropy();
-            auto new_log_prob = ac->log_prob(actions[i]);
+        auto av = ac->forward(cpy_sta); // action value pairs
+        auto action = std::get<0>(av);
+        auto entropy = ac->entropy();
+        auto new_log_prob = ac->log_prob(cpy_act);
 
-            auto old_log_prob = log_probs[i];
-            auto ratio = (new_log_prob - old_log_prob).exp();
-            auto surr1 = ratio*advantages[i];
-            auto surr2 = torch::clamp(ratio, 1. - clip_param, 1. + clip_param)*advantages[i];
+        auto old_log_prob = cpy_log;
+        auto ratio = (new_log_prob - old_log_prob).exp();
+        auto surr1 = ratio*cpy_adv;
+        auto surr2 = torch::clamp(ratio, 1. - clip_param, 1. + clip_param)*cpy_adv;
 
-            auto val = std::get<1>(av);
-            auto actor_loss = -torch::min(surr1, surr2);
-            auto critic_loss = (returns[i]-val).pow(2);
+        auto val = std::get<1>(av);
+        auto actor_loss = -torch::min(surr1, surr2);
+        auto critic_loss = (cpy_ret-val).pow(2);
 
-            auto loss = 0.5*critic_loss+actor_loss-beta*entropy; 
-            for (uint j=0;j<loss.size(0);j++) {
-            	AT_ASSERT(!std::isnan(loss[j].template item<double>()));
-            }
+        auto loss = 0.5*critic_loss+actor_loss-beta*entropy;
 
-            opt.zero_grad();
-            loss.backward();
-            opt.step();
-        }
+        opt.zero_grad();
+        loss.backward();
+        opt.step();
     }
 }
