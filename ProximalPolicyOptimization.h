@@ -78,7 +78,7 @@ auto PPO::update(ActorCritic& ac,
 
         auto av = ac->forward(cpy_sta); // action value pairs
         auto action = std::get<0>(av);
-        auto entropy = ac->entropy();
+        auto entropy = ac->entropy().mean();
         auto new_log_prob = ac->log_prob(cpy_act);
 
         auto old_log_prob = cpy_log;
@@ -87,8 +87,8 @@ auto PPO::update(ActorCritic& ac,
         auto surr2 = torch::clamp(ratio, 1. - clip_param, 1. + clip_param)*cpy_adv;
 
         auto val = std::get<1>(av);
-        auto actor_loss = -torch::min(surr1, surr2);
-        auto critic_loss = (cpy_ret-val).pow(2);
+        auto actor_loss = -torch::min(surr1, surr2).mean();
+        auto critic_loss = (cpy_ret-val).pow(2).mean();
 
         auto loss = 0.5*critic_loss+actor_loss-beta*entropy;
 
