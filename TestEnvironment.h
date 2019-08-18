@@ -39,7 +39,7 @@ struct TestEnvironment
         torch::Tensor done = torch::zeros({1, 1}, torch::kF64);
         STATUS status;
 
-        if (GoalDist(pos_) < 4e-1) {
+        if (GoalDist(pos_) < 6e-1) {
             status = WON;
             done[0][0] = 1.;
         }
