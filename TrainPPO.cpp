@@ -74,20 +74,20 @@ int main() {
             values.push_back(std::get<1>(av));
             log_probs.push_back(ac->log_prob(actions[c]));
 
-            double x_act = *(actions[c].data<double>());
-            double y_act = *(actions[c].data<double>()+1);
+            double x_act = actions[c][0][0].item<double>();
+            double y_act = actions[c][0][1].item<double>();
             auto sd = env.Act(x_act, y_act);
 
             // New state.
             rewards.push_back(env.Reward(std::get<1>(sd)));
             dones.push_back(std::get<2>(sd));
 
-            avg_reward += *(rewards[c].data<double>())/n_iter;
+            avg_reward += rewards[c][0][0].item<double>()/n_iter;
 
             // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST, RESETTING)
             out << e << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
-            if (*(dones[c].data<double>()) == 1.) 
+            if (dones[c][0][0].item<double>() == 1.) 
             {
                 // Set new goal.
                 double x_new = double(dist(re)); 

@@ -70,11 +70,11 @@ struct TestEnvironment
                 break;
             case WON:
                 reward[0][0] += 10.;
-                printf("won, reward: %f\n", *(reward.data<double>()));
+                printf("won, reward: %f\n", reward[0][0].item<double>());
                 break;
             case LOST:
                 reward[0][0] -= 10.;
-                printf("lost, reward: %f\n", *(reward.data<double>()));
+                printf("lost, reward: %f\n", reward[0][0].item<double>());
                 break;
         }
 

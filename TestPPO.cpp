@@ -47,8 +47,8 @@ int main() {
         auto av = ac->forward(env.State());
         auto action = std::get<0>(av);
 
-        double x_act = *(action.data<double>());
-        double y_act = *(action.data<double>()+1);
+        double x_act = action[0][0].item<double>();
+        double y_act = action[0][1].item<double>();
         auto sd = env.Act(x_act, y_act);
 
         // Check for done state.
@@ -57,7 +57,7 @@ int main() {
         // episode, agent_x, agent_y, goal_x, goal_y, AGENT=(PLAYING, WON, LOST, RESETTING)
         out << 1 << ", " << env.pos_(0) << ", " << env.pos_(1) << ", " << env.goal_(0) << ", " << env.goal_(1) << ", " << std::get<1>(sd) << "\n";
 
-        if (*(done.data<double>()) == 1.) 
+        if (done[0][0].item<double>() == 1.) 
         {
             // Set new goal.
             double x_new = double(dist(re)); 

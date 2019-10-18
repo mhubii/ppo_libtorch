@@ -59,7 +59,7 @@ struct ActorCriticImpl : public torch::nn::Module
         {
             torch::NoGradGuard no_grad;
 
-            torch::Tensor action = torch::normal(mu_, log_std_.exp().expand_as(mu_));
+            torch::Tensor action = at::normal(mu_, log_std_.exp().expand_as(mu_));
             return std::make_tuple(action, val);  
         }
         else 
