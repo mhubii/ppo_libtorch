@@ -27,7 +27,8 @@ cd build
 ```
 To plot the results, run
 ```shell
-python plot.py --online_view --csv_file ../data/data.csv --epochs 1 10
+cd ..
+python plot.py --online_view --csv_file data/data.csv --epochs 1 10
 ```
 It should produce something like shown below.
 <br>
@@ -44,7 +45,8 @@ cd build
 ```
 To plot the results, run
 ```shell
-python plot.py --online_view --csv_file ../data/data_test.csv --epochs 1
+cd ..
+python plot.py --online_view --csv_file data/data_test.csv --epochs 1
 ```
 ## Visualization
 The results are saved to `data/data.csv` and can be visualized by running `python plot.py`. Run
