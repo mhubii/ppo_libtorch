@@ -60,11 +60,11 @@ auto PPO::update(ActorCritic& ac,
     for (uint e=0;e<epochs;e++)
     {
         // Generate random indices.
-        torch::Tensor cpy_sta = torch::zeros({mini_batch_size, states.size(1)}, states.type());
-        torch::Tensor cpy_act = torch::zeros({mini_batch_size, actions.size(1)}, actions.type());
-        torch::Tensor cpy_log = torch::zeros({mini_batch_size, log_probs.size(1)}, log_probs.type());
-        torch::Tensor cpy_ret = torch::zeros({mini_batch_size, returns.size(1)}, returns.type());
-        torch::Tensor cpy_adv = torch::zeros({mini_batch_size, advantages.size(1)}, advantages.type());
+        torch::Tensor cpy_sta = torch::zeros({mini_batch_size, states.size(1)}, states.options());
+        torch::Tensor cpy_act = torch::zeros({mini_batch_size, actions.size(1)}, actions.options());
+        torch::Tensor cpy_log = torch::zeros({mini_batch_size, log_probs.size(1)}, log_probs.options());
+        torch::Tensor cpy_ret = torch::zeros({mini_batch_size, returns.size(1)}, returns.options());
+        torch::Tensor cpy_adv = torch::zeros({mini_batch_size, advantages.size(1)}, advantages.options());
 
         for (uint b=0;b<mini_batch_size;b++) {
 
