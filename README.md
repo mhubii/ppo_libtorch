@@ -12,7 +12,7 @@ This is an implementation of the [proximal policy optimization algorithm](https:
 You first need to install PyTorch. For a clean installation from Anaconda, checkout this short [tutorial](https://gist.github.com/mhubii/1c1049fb5043b8be262259efac4b89d5), or this [tutorial](https://pytorch.org/cppdocs/installing.html), to only install the binaries.
 
 Do
-```
+```shell
 mkdir build
 cd build
 cmake -DCMAKE_PREFIX_PATH=/absolut/path/to/libtorch ..
@@ -21,9 +21,13 @@ make
 
 ## Run
 Run the executable with
-```
+```shell
 cd build
 ./train_ppo
+```
+To plot the results, run
+```shell
+python plot.py --online_view --csv_file ../data/data.csv --epochs 1 10
 ```
 It should produce something like shown below.
 <br>
@@ -34,9 +38,17 @@ It should produce something like shown below.
 <br><br>
 
 The algorithm can also be used in test mode, once trained. Therefore, run
-```
+```shell
 cd build
 ./test_ppo
 ```
+To plot the results, run
+```shell
+python plot.py --online_view --csv_file ../data/data_test.csv --epochs 1
+```
 ## Visualization
-The results are saved to `data/data.csv` and can be visualized by running `python plot.py`.
+The results are saved to `data/data.csv` and can be visualized by running `python plot.py`. Run
+```shell
+python plot.py --help
+```
+for help.
