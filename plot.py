@@ -8,17 +8,23 @@ import numpy as np
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--csv_file", type=str, default="data/data_test.csv")
-    parser.add_argument("--epochs", nargs="+", default="0")
-    parser.add_argument("--online_view", action="store_true")
-    parser.add_argument("--output_path", type=str, default="img")
-    parser.add_argument("--output_file", type=str, default="test")
+    parser.add_argument("--csv_file", type=str, default="data/data_test.csv",
+                        help="Path to the generated trajectories.")
+    parser.add_argument("--epochs", nargs="+", default="0",
+                        help="Epochs to be plotted.")
+    parser.add_argument("--online_view", action="store_true",
+                        help="Whether to show online view or generate gif.")
+    parser.add_argument("--output_path", type=str, default="img",
+                        help="The path to write generated gifs to.")
+    parser.add_argument("--output_file", type=str,
+                        default="test", help="The prefix of the gif.")
     args = parser.parse_args()
 
     # create output path
     path = pathlib.Path(args.output_path)
-    if not path.exists():
-        path.mkdir(parents=True)
+    if not args.online_view:
+        if not path.exists():
+            path.mkdir(parents=True)
 
     # get data
     data = np.genfromtxt(args.csv_file, delimiter=",")
