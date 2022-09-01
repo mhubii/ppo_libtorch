@@ -21,7 +21,7 @@ int main() {
     // Model.
     uint n_in = 4;
     uint n_out = 2;
-    double std = 1e-2;
+    double std = 2e-2;
 
     ActorCritic ac(n_in, n_out, std);
     ac->to(torch::kF64);
